@@ -4,6 +4,7 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const { allowedNodeEnvironmentFlags } = require("process");
 const { connect } = require("http2");
+const database = require("./database");
 
 const connection  = mysql.createConnection({
     host: "localhost",
@@ -73,23 +74,25 @@ function showMainMenu(){
                 break;
 
             case "Exit":
-                console.log("Thanks Message");
-                endConnection();
+                exit();
                 break;
 
+        }
+    }).catch(function(err){
+        if (err){
+            console.log("Main menu error: " + err);
         }
     });
 }
 
 function addDepartment(){
-
     console.log("\n Enter Dpartment related information");
     inquirer.prompt({
         type: "input",
         name: "dept",
         message: "Enter a department name you want added to the Department Table:",
     }).then(function(answer){
-        console.log("Inserting Department...\n");
+        console.log("\nInserting Department...\n");
         let query = connection.query(
             "INSERT INTO department SET ?",
             {
@@ -98,7 +101,7 @@ function addDepartment(){
             function(err, res) {
                 if(err) throw err;
                 console.log(res.affectedRows + "department inserted!\n");
-                showMainMenu();
+                continuePrompt();
             }
         )
     });
@@ -124,7 +127,7 @@ function addEmpRole(){
             message: "Enter the Dept-ID of this Role:"
         }
     ]).then(function(answer){
-        console.log("Inserting Role...\n");
+        console.log("\nInserting Role...\n");
         let query = connection.query(
             "INSERT INTO role SET ?",
             {
@@ -135,7 +138,7 @@ function addEmpRole(){
             function(err, res) {
                 if(err) throw err;
                 console.log(res.affectedRows + "role inserted!\n");
-                showMainMenu();
+                continuePrompt();
             }
         )
     });
@@ -166,7 +169,7 @@ function addEmployee(){
             message: "Enter the Manager-ID, if the Employee reports to a Manager:"
         }
     ]).then(function(answer){
-        console.log("Inserting Employee...\n");
+        console.log("\nInserting Employee...\n");
         let query = connection.query(
             "INSERT INTO employee SET ?",
             {
@@ -178,12 +181,68 @@ function addEmployee(){
             function(err, res) {
                 if(err) throw err;
                 console.log(res.affectedRows + "role inserted!\n");
-                showMainMenu();
+                continuePrompt();
             }
         )
     });
 }
 
-function endConnection(){
+function viewDepartment(){
+    console.log("\nDepartment List:");
+    // let deptArray = [
+    //     {deptID: "department ID",
+    //      deptName: "department Name"
+    //     }
+    // ];
+    var query = "SELECT id, name FROM department order by id";
+    console.log(`Department ID \t Department Name`); 
+    connection.query(query, function(err, res){
+        if (err){
+            console.log("Error while selecting Department Table: " + err);
+        }
+        else{
+            for (let i = 0; i < res.length; i++) {
+                console.log(`${res[i].id} \t ${res[i].name}`);  
+                continuePrompt();
+            }
+        }
+    })
+
+}
+
+function viewRole(){
+    console.log("\nDepartment Role List:");
+
+    var query = "SELECT title, salary, department_id order by department_id";
+    console.log(`Title || Salary || Dept_Id`);
+    connection.query(query,function(err,res){
+        if (err){
+            console.log("Error while selecting Role Table: " + err);
+        } else{
+            for (let i = 0; i < res.length; i++) {
+                console.log(`${res.title} || ${res.salary} || ${res.department_id} `);
+                continuePrompt(); 
+            }
+        }
+    })
+}
+
+function continuePrompt(){
+    inquirer.prompt({
+        type: "confirm",
+        name: "continue",
+        message: "Continue....?",
+    }).then((answer) => {
+        if (answer.continue){
+            showMainMenu();
+        } else{
+            exit();
+        }
+    })
+}
+
+function exit(){
+    console.log("Thanks for using Employ-E-manger!");
+    console.log("Ending Connection!");
     connection.end();
 }
