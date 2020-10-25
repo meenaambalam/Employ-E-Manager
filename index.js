@@ -99,8 +99,11 @@ function addDepartment(){
                 name : answer.dept
             },
             function(err, res) {
-                if(err) throw err;
-                console.log(res.affectedRows + "department inserted!\n");
+                if(err){
+                    console.log("Error while inserting data into Department table: "+ err);
+                } else {
+                    console.log(res.affectedRows + "department inserted!\n");
+                }
                 continuePrompt();
             }
         )
@@ -136,8 +139,11 @@ function addEmpRole(){
                 department_id: answer.deptId
             },
             function(err, res) {
-                if(err) throw err;
-                console.log(res.affectedRows + "role inserted!\n");
+                if(err){
+                    console.log("Error while inserting data into Role Table: " + err);
+                } else {
+                    console.log(res.affectedRows + "role inserted!\n");
+                }
                 continuePrompt();
             }
         )
@@ -179,8 +185,11 @@ function addEmployee(){
                 manager_id: parseInt(answer.managerId) || null
             },
             function(err, res) {
-                if(err) throw err;
-                console.log(res.affectedRows + "role inserted!\n");
+                if(err){
+                    console.log("Error while inserting data into Employee Table: " + err);
+                } else{
+                    console.log(res.affectedRows + "role inserted!\n");
+                }
                 continuePrompt();
             }
         )
@@ -203,9 +212,9 @@ function viewDepartment(){
         else{
             for (let i = 0; i < res.length; i++) {
                 console.log(`${res[i].id} \t ${res[i].name}`);  
-                continuePrompt();
             }
         }
+        continuePrompt();
     })
 
 }
@@ -213,18 +222,18 @@ function viewDepartment(){
 function viewRole(){
     console.log("\nDepartment Role List:");
 
-    var query = "SELECT title, salary, department_id order by department_id";
+    var query = "SELECT title, salary, department_id FROM role ORDER BY department_id";
     console.log(`Title || Salary || Dept_Id`);
     connection.query(query,function(err,res){
         if (err){
             console.log("Error while selecting Role Table: " + err);
         } else{
             for (let i = 0; i < res.length; i++) {
-                console.log(`${res.title} || ${res.salary} || ${res.department_id} `);
-                continuePrompt(); 
+                console.log(`${res[i].title} || ${res[i].salary} || ${res[i].department_id} `);
             }
         }
-    })
+        continuePrompt(); 
+    });
 }
 
 function continuePrompt(){
