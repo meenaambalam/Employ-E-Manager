@@ -82,6 +82,8 @@ function showMainMenu(){
 }
 
 function addDepartment(){
+
+    console.log("\n Enter Dpartment related information");
     inquirer.prompt({
         type: "input",
         name: "dept",
@@ -129,6 +131,49 @@ function addEmpRole(){
                 title : answer.title,
                 salary: answer.salary,
                 department_id: answer.deptId
+            },
+            function(err, res) {
+                if(err) throw err;
+                console.log(res.affectedRows + "role inserted!\n");
+                showMainMenu();
+            }
+        )
+    });
+}
+
+function addEmployee(){
+    console.log("Enter Employee related information as per the prmopts:");
+
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "first_name",
+            message: "Enter First Name:"
+        },
+        {
+            type: "input",
+            name: "last_name",
+            message: "Enter Last Name:"
+        },
+        {
+            type: "input",
+            name: "roleId",
+            message: "Enter the Role-ID of this Employee:"
+        },
+        {
+            type: "input",
+            name: "managerId",
+            message: "Enter the Manager-ID, if the Employee reports to a Manager:"
+        }
+    ]).then(function(answer){
+        console.log("Inserting Employee...\n");
+        let query = connection.query(
+            "INSERT INTO employee SET ?",
+            {
+                first_name : answer.first_name,
+                last_name: answer.last_name,
+                role_id: parseInt(answer.roleId),
+                manager_id: parseInt(answer.managerId) || null
             },
             function(err, res) {
                 if(err) throw err;
