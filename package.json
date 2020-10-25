@@ -1,0 +1,23 @@
+{
+  "name": "employ-e-manager",
+  "version": "1.0.0",
+  "description": "App that helps to manage the employee information in the employee Database.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meenaambalam/Employ-E-Manager.git"
+  },
+  "author": "Meena A Ambalam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/meenaambalam/Employ-E-Manager/issues"
+  },
+  "homepage": "https://github.com/meenaambalam/Employ-E-Manager#readme",
+  "dependencies": {
+    "inquirer": "^7.3.3",
+    "mysql": "^2.18.1"
+  }
+}
