@@ -43,8 +43,9 @@ function showMainMenu(){
                 addDepartment();
                 break;
             
-            case "Add roles":
-                addRole();
+            case "Add Roles":
+                console.log("Add Role being called here:");
+                addEmpRole();
                 break;
 
             case "Add Employees":
@@ -101,24 +102,26 @@ function addDepartment(){
     });
 }
 
-function addRole(){
-    inquirer.prompt(
+function addEmpRole(){
+    console.log("Enter Role related information as per the prmopts:");
+
+    inquirer.prompt([
         {
             type: "input",
             name: "title",
-            message: "Enter information on Title you want added to the Role Table:",
+            message: "Enter information on Title you want added to the Role Table:"
         },
         {
             type: "input",
             name: "salary",
-            message: "Enter Salary of the Role:",
+            message: "Enter Salary of the Role:"
         },
         {
             type: "input",
             name: "deptId",
             message: "Enter the Dept-ID of this Role:"
         }
-    ).then(function(answer){
+    ]).then(function(answer){
         console.log("Inserting Role...\n");
         let query = connection.query(
             "INSERT INTO role SET ?",
@@ -129,7 +132,7 @@ function addRole(){
             },
             function(err, res) {
                 if(err) throw err;
-                console.log(res.affectedRows + "department inserted!\n");
+                console.log(res.affectedRows + "role inserted!\n");
                 showMainMenu();
             }
         )
