@@ -71,7 +71,7 @@ function showMainMenu(){
     });
 }
 
-
+//Add functionality
 function showAddMenu(){
     inquirer.prompt(
         {type: "rawlist",
@@ -352,7 +352,9 @@ function viewEmployee(){
     connection.query(query,function(err,res){
         if (err){
             console.log("Error while selecting Employee Table: " + err);
-        } else{
+            return;
+        } 
+        if(res.length > 0){
             for (let i = 0; i < res.length; i++) {
                 resultSet = [res[i].id,res[i].first_name,res[i].last_name,res[i].role_id,res[i].role,res[i].manager_id,res[i].manager];
                 resultDisplay.push(resultSet);
@@ -367,7 +369,7 @@ function viewEmployee(){
 }
 
 function viewEmployeebyManager(){
-    console.log("\nEmployee List by Manager:");
+    console.log("\nEmployee List by Manager:\n");
     inquirer.prompt([
         {
         type:"input",
@@ -409,7 +411,7 @@ function viewEmployeebyManager(){
 }
 
 function showReportMenu(){
-    console.log("\nReport of the total utilized budget of each department:");
+    console.log("\nTotal utilized budget of each department:\n");
 
     let query = "SELECT d.name as department, d.id as department_id, SUM(r.salary) as total_budget";
     query += " FROM employee e LEFT JOIN role r ON e.role_id = r.id"
@@ -430,8 +432,8 @@ function showReportMenu(){
                 // console.log(`${res[i].department} || ${res[i].department_id} || ${res[i].total_budget}`);
             }
             console.table(["Department","Department_ID", "Total_Budget_Utilized"],resultDisplay);
-            continuePrompt(); 
         }
+        continuePrompt(); 
     });
 }
 
@@ -480,7 +482,7 @@ function showUpdateMenu(){
 
 
 function updateEmpRole(){
-    console.log("\nUpdating Employee Role");
+    console.log("\nUpdating Employee Role\n");
     inquirer.prompt([
         {
             name: "employee_id",
@@ -493,7 +495,7 @@ function updateEmpRole(){
             message: "Enter the new role_id of the Employee:"
         }
     ]).then(function(answer){
-        console.log("Starting to update\n");
+        console.log("\nStarting to update\n");
         connection.query(
             "UPDATE employee SET ? WHERE ?",
             [
@@ -517,7 +519,7 @@ function updateEmpRole(){
 }
 
 function updateEmpMgr(){
-    console.log("\nUpdating Employee Manager");
+    console.log("\nUpdating Employee Manager\n");
     inquirer.prompt([
         {
             name: "employee_id",
@@ -530,7 +532,7 @@ function updateEmpMgr(){
             message: "Enter the new Manager Id the employee will be reporting to:"
         }
     ]).then(function(answer){
-        console.log("Starting to update\n");
+        console.log("\nStarting to update\n");
         connection.query(
             "UPDATE employee SET ? WHERE ?",
             [
@@ -553,6 +555,50 @@ function updateEmpMgr(){
     });
 }
 
+//delete functionality
+function showDeleteMenu(){
+    inquirer.prompt([
+        {
+            name: "delete_action",
+            type: "rawlist",
+            message: "What information you would like to Delete?",
+            choices: [
+                "Delete a Department?",
+                "Delete a Role?",
+                "Delete an Employee?"
+            ]
+        }
+    ]).then(function(answer){
+        console.log("\nDeleting....\n");
+        switch (answer.delete_action){
+            case "Delete a Department?":
+                deleteDept();
+                break;
+            
+            case "Delete a Role?":
+                deleteRole();
+                break;
+
+            case "Delete an Employee?":
+                deleteEmployee();
+                break;
+            
+            case "Return to Delete Menu":
+                showDeleteMenu();
+                break;
+    
+            case "Return to Main Menu":
+                showMainMenu();
+                break;
+
+            case "Exit":
+                exit();
+                break;
+
+        }
+
+    });
+}
 
 //common menu functionality
 function continuePrompt(){
@@ -570,7 +616,7 @@ function continuePrompt(){
 }
 
 function exit(){
-    console.log("Thanks for using Employ-E-manger!");
+    console.log("\nThanks for using Employ-E-Manager!");
     console.log("Ending Connection!");
     connection.end();
 }
