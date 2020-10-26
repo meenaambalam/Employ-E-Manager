@@ -322,16 +322,20 @@ function viewDepartment(){
 
 function viewRole(){
     console.log("\nDepartment Role List:");
+    let resultDisplay = [];
 
     var query = "SELECT id, title, salary, department_id FROM role ORDER BY department_id";
-    console.log(`ID || Title || Salary || Dept_Id`);
+    //console.log(`ID || Title || Salary || Dept_Id`);
     connection.query(query,function(err,res){
         if (err){
             console.log("Error while selecting Role Table: " + err);
         } else{
             for (let i = 0; i < res.length; i++) {
-                console.log(`${res[i].id} || ${res[i].title} || ${res[i].salary} || ${res[i].department_id} `);
+                let resultSet = [res[i].id,res[i].title,res[i].salary,res[i].department_id];
+                resultDisplay.push(resultSet);
+                //console.log(`${res[i].id} || ${res[i].title} || ${res[i].salary} || ${res[i].department_id} `);
             }
+            console.table(["ID", "Title", "Salary", "Dept_Id"],resultDisplay);
         }
         continuePrompt(); 
     });
@@ -339,20 +343,24 @@ function viewRole(){
 
 function viewEmployee(){
     console.log("\nEmployee List:");
+    let resultDisplay = [];
 
     var query = "SELECT e.id, e.first_name, e.last_name, e.role_id, r.title as 'role', e.manager_id, CONCAT(m.first_name,',',m.last_name) as manager";
     query += "  FROM employee e LEFT JOIN employee m ON e.manager_id = m.id";
     query += "  LEFT JOIN role r ON e.role_id = r.id";
-    console.log(`Employee_Id || FirstName || LastName || RoleID || Role || ManagerID || ManagerName`);
+    //console.log(`Employee_Id || FirstName || LastName || RoleID || Role || ManagerID || ManagerName`);
     connection.query(query,function(err,res){
         if (err){
             console.log("Error while selecting Employee Table: " + err);
         } else{
             for (let i = 0; i < res.length; i++) {
-                let outRow = `${res[i].id} || ${res[i].first_name} || ${res[i].last_name} || ${res[i].role_id}`;
-                outRow += `|| ${res[i].role} || ${res[i].manager_id} || ${res[i].manager}`;
-                console.log(outRow);
+                resultSet = [res[i].id,res[i].first_name,res[i].last_name,res[i].role_id,res[i].role,res[i].manager_id,res[i].manager];
+                resultDisplay.push(resultSet);
+                // let outRow = `${res[i].id} || ${res[i].first_name} || ${res[i].last_name} || ${res[i].role_id}`;
+                // outRow += `|| ${res[i].role} || ${res[i].manager_id} || ${res[i].manager}`;
+                // console.log(outRow);
             }
+            console.table(["Employee_Id", "FirstName", "LastName", "RoleID", "Role", "ManagerID", "ManagerName"], resultDisplay);
         }
         continuePrompt(); 
     });
@@ -367,26 +375,63 @@ function viewEmployeebyManager(){
         message: "Enter the Manager ID:"
         }
     ]).then(function(answer){
+
         var query = "SELECT e.id, e.first_name, e.last_name, e.role_id, r.title as 'role', e.manager_id, CONCAT(m.first_name,',',m.last_name) as manager";
         query += "  FROM employee e LEFT JOIN employee m ON e.manager_id = m.id";
         query += "  LEFT JOIN role r ON e.role_id = r.id WHERE e.manager_id = ?";
         
-        console.log(`Employee_Id || FirstName || LastName || RoleID || Role || ManagerID || ManagerName`);
+        //console.log(`Employee_Id || FirstName || LastName || RoleID || Role || ManagerID || ManagerName`);
         connection.query(
             query,
             answer.managerID,
             function(err,res){
             if (err){
                 console.log("Error while selecting Employee Table by Manager: " + err);
-            } else{
+                return;
+            } 
+            if (res.length > 0){
+                let resultDisplay = [];
+                let resultSet = [];
                 for (let i = 0; i < res.length; i++) {
-                    let outRow = `${res[i].id} || ${res[i].first_name} || ${res[i].last_name} || ${res[i].role_id}`;
-                    outRow += `|| ${res[i].role} || ${res[i].manager_id} || ${res[i].manager}`;
-                    console.log(outRow);
+                    resultSet = [res[i].id,res[i].first_name,res[i].last_name,res[i].role_id,res[i].role,res[i].manager_id,res[i].manager];
+                    resultDisplay.push(resultSet);
+                    // let outRow = `${res[i].id} || ${res[i].first_name} || ${res[i].last_name} || ${res[i].role_id}`;
+                    // outRow += `|| ${res[i].role} || ${res[i].manager_id} || ${res[i].manager}`;
+                    // console.log(outRow);
                 }
+                console.table(["Employee_Id","FirstName","LastName","RoleID","Role","ManagerID","ManagerName"],resultDisplay);
+            } else{
+                console.log("\nNo records to Display!\n");
             }
             continuePrompt(); 
         });
+    });
+}
+
+function showReportMenu(){
+    console.log("\nReport of the total utilized budget of each department:");
+
+    let query = "SELECT d.name as department, d.id as department_id, SUM(r.salary) as total_budget";
+    query += " FROM employee e LEFT JOIN role r ON e.role_id = r.id"
+    query += " LEFT JOIN department d ON r.department_id = d.id"
+    query += " GROUP BY d.name";
+    connection.query(query,function(err,res){
+        if(err) {
+            console.log("Error while selecting department total budget information" + err);
+            return;
+        } 
+        if(res.length > 0) {
+            let resultDisplay = [];
+            let resultSet = [];
+            // console.log(`Department || Department_ID || Total_Budget_Used`);
+            for (let i = 0; i < res.length; i++) {
+                resultSet = [res[i].department,res[i].department_id,res[i].total_budget];
+                resultDisplay.push(resultSet);
+                // console.log(`${res[i].department} || ${res[i].department_id} || ${res[i].total_budget}`);
+            }
+            console.table(["Department","Department_ID", "Total_Budget_Utilized"],resultDisplay);
+            continuePrompt(); 
+        }
     });
 }
 
@@ -508,25 +553,6 @@ function updateEmpMgr(){
     });
 }
 
-
-function showReportMenu(){
-    console.log("\nReport of the total utilized budget of a department:");
-    let query = "SELECT d.name as department, d.id as department_id, SUM(r.salary) as total_budget";
-    query += " FROM employee e LEFT JOIN role r ON e.role_id = r.id"
-    query += " LEFT JOIN department d ON r.department_id = d.id"
-    query += " GROUP BY d.name";
-    connection.query(query,function(err,res){
-        if(err) {
-            console.log("Error while selecting department total budget information" + err);
-        } else {
-            console.log(`Department || Department_ID || Total_Budget_Used`);
-            for (let i = 0; i < res.length; i++) {
-                console.log(`${res[i].department} || ${res[i].department_id} || ${res[i].total_budget}`);
-            }
-            continuePrompt(); 
-        }
-    });
-}
 
 //common menu functionality
 function continuePrompt(){
