@@ -3,23 +3,14 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
+// const { allowedNodeEnvironmentFlags } = require("process");
+// const { connect } = require("http2");
+const dbConnection = require("./database_connection");
+const dbAdd = require("./database_add");
 
-//declaring the MySQL connection details for "employee" database 
-const connection  = mysql.createConnection({
-    host: "localhost",
-    port: 3306,
-    user: "root",
-    password: "root",
-    database: "employees"
-});
+dbConnection.startConnection();
+showMainMenu();
 
-//starting the DB connection
-connection.connect(function(err){
-    if (err) throw err;
-    showMainMenu();
-});
-
-//MainMenu CLI prompt options 
 function showMainMenu(){
     console.log("Welcome to Employ-E-Manager");
 
@@ -70,7 +61,7 @@ function showMainMenu(){
     });
 }
 
-//Add data to Tables "Menu" functionality
+//Add functionality
 function showAddMenu(){
     inquirer.prompt(
         {type: "rawlist",
@@ -120,7 +111,7 @@ function showAddMenu(){
 }
 
 
-//Add Department data to Department Table
+//Add Menu specific functionality
 function addDepartment(){
     console.log("\n Enter Department related information");
     inquirer.prompt({
@@ -128,25 +119,11 @@ function addDepartment(){
         name: "dept",
         message: "Enter a department name you want added to the Department Table:",
     }).then(function(answer){
-        console.log("\nInserting Department...\n");
-        let query = connection.query(
-            "INSERT INTO department SET ?",
-            {
-                name : answer.dept
-            },
-            function(err, res) {
-                if(err){
-                    console.log("Error while inserting data into Department table: "+ err);
-                } else {
-                    console.log(res.affectedRows + "department inserted!\n");
-                }
-                continuePrompt();
-            }
-        )
+        dbAdd.insertDept(answer.dept);
+        continuePrompt();
     });
 }
 
-//Add a new role data to Role Table
 function addEmpRole(){
     console.log("Enter Role related information as per the prmopts:");
 
@@ -167,27 +144,11 @@ function addEmpRole(){
             message: "Enter the Dept-ID of this Role:"
         }
     ]).then(function(answer){
-        console.log("\nInserting Role...\n");
-        let query = connection.query(
-            "INSERT INTO role SET ?",
-            {
-                title : answer.title,
-                salary: answer.salary,
-                department_id: answer.deptId
-            },
-            function(err, res) {
-                if(err){
-                    console.log("Error while inserting data into Role Table: " + err);
-                } else {
-                    console.log(res.affectedRows + "role inserted!\n");
-                }
-                continuePrompt();
-            }
-        )
+        dbAdd.insertRole(answer.title, answer.salary, answer.deptId);
+        continuePrompt();
     });
 }
 
-//Add Employee data to Employee Table
 function addEmployee(){
     console.log("Enter Employee related information as per the prmopts:");
 
@@ -213,28 +174,13 @@ function addEmployee(){
             message: "Enter the Manager-ID, if the Employee reports to a Manager:"
         }
     ]).then(function(answer){
-        console.log("\nInserting Employee...\n");
-        let query = connection.query(
-            "INSERT INTO employee SET ?",
-            {
-                first_name : answer.first_name,
-                last_name: answer.last_name,
-                role_id: parseInt(answer.roleId),
-                manager_id: parseInt(answer.managerId) || null
-            },
-            function(err, res) {
-                if(err){
-                    console.log("Error while inserting data into Employee Table: " + err);
-                } else{
-                    console.log(res.affectedRows + "role inserted!\n");
-                }
-                continuePrompt();
-            }
-        )
+        dbAdd.insertEmployee(answer.first_name, answer.last_name, answer.roleId, answer.managerId);
+        continuePrompt();
     });
 }
 
-//View Data - Menu related functionality
+//View  menu related functionality
+
 function showViewMenu(){
     inquirer.prompt(
         {type: "rawlist",
@@ -292,7 +238,7 @@ function showViewMenu(){
     });
 }
 
-//View Department data
+
 function viewDepartment(){
     console.log("\nDepartment List:");
     let resultDisplay = [];
@@ -313,7 +259,6 @@ function viewDepartment(){
 
 }
 
-//View Role data
 function viewRole(){
     console.log("\nDepartment Role List:");
     let resultDisplay = [];
@@ -333,7 +278,6 @@ function viewRole(){
     });
 }
 
-//View Employee data
 function viewEmployee(){
     console.log("\nEmployee List:");
     let resultDisplay = [];
@@ -357,7 +301,6 @@ function viewEmployee(){
     });
 }
 
-//View Employee data for a given Manager
 function viewEmployeebyManager(){
     console.log("\nEmployee List by Manager:\n");
     inquirer.prompt([
@@ -396,7 +339,6 @@ function viewEmployeebyManager(){
     });
 }
 
-//View utilized Budget by Department
 function showReportMenu(){
     console.log("\nTotal utilized budget of each department:\n");
 
@@ -422,7 +364,7 @@ function showReportMenu(){
     });
 }
 
-//Update Data - Menu
+//Update menu related functionality
 function showUpdateMenu(){
     inquirer.prompt(
         {type: "rawlist",
@@ -465,7 +407,7 @@ function showUpdateMenu(){
     });
 }
 
-//Update Role for a given Employee
+
 function updateEmpRole(){
     console.log("\nUpdating Employee Role\n");
     inquirer.prompt([
@@ -503,7 +445,6 @@ function updateEmpRole(){
     });
 }
 
-//Update Manager for a given Employee
 function updateEmpMgr(){
     console.log("\nUpdating Employee Manager\n");
     inquirer.prompt([
@@ -541,7 +482,7 @@ function updateEmpMgr(){
     });
 }
 
-//Delete functionality
+//delete functionality
 function showDeleteMenu(){
     inquirer.prompt([
         {
@@ -551,10 +492,7 @@ function showDeleteMenu(){
             choices: [
                 "Delete a Department?",
                 "Delete a Role?",
-                "Delete an Employee?",
-                "Return to Delete Menu",
-                "Return to Main Menu",
-                "Exit"
+                "Delete an Employee?"
             ]
         }
     ]).then(function(answer){
@@ -594,72 +532,14 @@ function deleteDept(){
         {
             type: "input",
             name: "deptId",
-            message: "Enter the department ID you want to delete:"
+            message: "Enter the department you want to delete:"
         }
     ]).then(function(answer){
-        console.log("Deleting Department information...");
-        connection.query(
-            "DELETE FROM department WHERE ?",
-            {
-                id: answer.deptId
-            },
-            function(err, res){
-                if (err) throw err;
-                console.log(res.affectedRows + " department deleted!\n");
-                showDeleteMenu();
-            }
-        );
+
     });
 }
 
-function deleteRole(){
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "roleId",
-            message: "Enter the Role ID you want to delete:"
-        }
-    ]).then(function(answer){
-        console.log("Deleting Role information...");
-        connection.query(
-            "DELETE FROM role WHERE ?",
-            {
-                id: answer.roleId
-            },
-            function(err, res){
-                if (err) throw err;
-                console.log(res.affectedRows + " roles deleted!\n");
-                showDeleteMenu();
-            }
-        );
-    });
-}
-
-
-function deleteEmployee(){
-    inquirer.prompt([
-        {
-            type: "input",
-            name: "employeeId",
-            message: "Enter the Employee ID you want to delete:"
-        }
-    ]).then(function(answer){
-        console.log("Deleting Employee information...");
-        connection.query(
-            "DELETE FROM employee WHERE ?",
-            {
-                id: answer.employeeId
-            },
-            function(err, res){
-                if (err) throw err;
-                console.log(res.affectedRows + " employee deleted!\n");
-                showDeleteMenu();
-            }
-        );
-    });
-}
-
-//Common menu functionality to continue Prompt
+//common menu functionality
 function continuePrompt(){
     inquirer.prompt({
         type: "confirm",
@@ -674,7 +554,6 @@ function continuePrompt(){
     })
 }
 
-//Exit Application and Ending SQL Connection
 function exit(){
     console.log("\nThanks for using Employ-E-Manager!");
     console.log("Ending Connection!");
