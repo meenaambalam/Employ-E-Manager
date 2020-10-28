@@ -91,7 +91,6 @@ function showAddMenu(){
                 break;
             
             case "Add Roles":
-                console.log("Add Role being called here:");
                 addEmpRole();
                 break;
 
@@ -122,7 +121,7 @@ function showAddMenu(){
 
 //Add Department data to Department Table
 function addDepartment(){
-    console.log("\n Enter Department related information");
+    console.log("\nEnter Department related information");
     inquirer.prompt({
         type: "input",
         name: "dept",
@@ -148,7 +147,7 @@ function addDepartment(){
 
 //Add a new role data to Role Table
 function addEmpRole(){
-    console.log("Enter Role related information as per the prmopts:");
+    console.log("\nEnter Role related information as per the prmopts:");
 
     inquirer.prompt([
         {
@@ -168,7 +167,7 @@ function addEmpRole(){
         }
     ]).then(function(answer){
         console.log("\nInserting Role...\n");
-        let query = connection.query(
+        connection.query(
             "INSERT INTO role SET ?",
             {
                 title : answer.title,
@@ -189,7 +188,7 @@ function addEmpRole(){
 
 //Add Employee data to Employee Table
 function addEmployee(){
-    console.log("Enter Employee related information as per the prmopts:");
+    console.log("\nEnter Employee related information as per the prmopts:");
 
     inquirer.prompt([
         {
@@ -467,7 +466,7 @@ function showUpdateMenu(){
 
 //Update Role for a given Employee
 function updateEmpRole(){
-    console.log("\nUpdating Employee Role\n");
+    console.log("\nUpdate Employee Role\n");
     inquirer.prompt([
         {
             name: "employee_id",
@@ -505,7 +504,7 @@ function updateEmpRole(){
 
 //Update Manager for a given Employee
 function updateEmpMgr(){
-    console.log("\nUpdating Employee Manager\n");
+    console.log("\nUpdate Employee Manager\n");
     inquirer.prompt([
         {
             name: "employee_id",
